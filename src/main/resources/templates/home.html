@@ -3,10 +3,7 @@
 <head>
     <title>URL Shortener</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css"/>
-    <style>
-        body { padding-top: 5rem; }
-        .top-buffer { margin-top:20px; }
-    </style>
+    <link href="../static/css/style.css" th:href="@{/css/style.css}" rel="stylesheet" />
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
 </head>
 <body>
@@ -33,11 +30,11 @@
                     <form class="navbar-form navbar-right" role="search">
                         <div class="input-group">
                             <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
-                            <input type="text" class="form-control" name="username" placeholder="Username" />
+                            <input type="text" class="form-control" name="username" placeholder="Username" size="12" />
                         </div>
                         <div class="input-group">
                             <span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
-                            <input type="password" class="form-control" name="password" placeholder="Password" />
+                            <input type="password" class="form-control" name="password" placeholder="Password" size="12" />
                         </div>
                         <button type="submit" class="btn btn-default">Sign In</button>
                         <a href="#" class="btn btn-success">Register</a>
