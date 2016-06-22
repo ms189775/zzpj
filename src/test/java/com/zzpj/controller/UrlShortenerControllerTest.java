@@ -23,4 +23,15 @@ public class UrlShortenerControllerTest {
         Assert.assertEquals(expectedOutput, output);
     }
     
+    /**
+     * Test of isUrlValid method, of class UrlShortenerController.
+     */
+    @Test
+    public void testIsUrlValid() {
+        Assert.assertEquals(false, usc.isUrlValid("test"));
+        Assert.assertEquals(false, usc.isUrlValid("http://"));
+        Assert.assertEquals(false, usc.isUrlValid("http://test"));
+        Assert.assertEquals(true, usc.isUrlValid("http://test.pl/"));
+    }
+    
 }

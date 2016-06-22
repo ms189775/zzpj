@@ -1,6 +1,8 @@
 package com.zzpj.controller;
 
 import com.google.common.hash.Hashing;
+import java.io.IOException;
+import java.net.InetSocketAddress;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Controller;
@@ -14,15 +16,20 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.net.MalformedURLException;
+import java.net.Proxy;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.apache.commons.validator.UrlValidator;
 
 @Controller
 public class UrlShortenerController {
     @Autowired
     private StringRedisTemplate redis;
 
-    @RequestMapping(value="/", method=RequestMethod.GET)
+    @RequestMapping(value="/", method = RequestMethod.GET)
     public String showForm(UrlShortenerRequest request) {
         return "home";
     }
@@ -88,13 +95,9 @@ public class UrlShortenerController {
         return Hashing.murmur3_32().hashString(url, StandardCharsets.UTF_8).toString();
     }
     
-    private boolean isUrlValid(String url) {
-        boolean valid = true;
-        try {
-            new URL(url);
-        } catch (MalformedURLException e) {
-            valid = false;
-        }
-        return valid;
+    protected boolean isUrlValid(String url) {
+        String[] schemes = {"http", "https"};
+        UrlValidator urlValidator = new UrlValidator(schemes);
+        return urlValidator.isValid(url);
     }
 }
