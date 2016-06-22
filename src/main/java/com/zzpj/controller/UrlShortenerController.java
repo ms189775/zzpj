@@ -1,8 +1,8 @@
 package com.zzpj.controller;
 
 import com.google.common.hash.Hashing;
+import dao.LinkDao;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
@@ -15,11 +15,16 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.nio.charset.StandardCharsets;
 import org.apache.commons.validator.UrlValidator;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 @Controller
 public class UrlShortenerController {
+    LinkDao linkDao;
+    
     @Autowired
-    private StringRedisTemplate redis;
+    JdbcTemplate jdbcTemplate;
 
     @RequestMapping(value="/", method = RequestMethod.GET)
     public String showForm(UrlShortenerRequest request) {
@@ -28,7 +33,10 @@ public class UrlShortenerController {
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public void redirectToUrl(@PathVariable String id, HttpServletResponse resp) throws Exception {
-        final String url = redis.opsForValue().get(id);
+        String confFile = "applicationContext.xml";
+        ConfigurableApplicationContext context = new ClassPathXmlApplicationContext(confFile);
+        linkDao = (LinkDao) context.getBean("linkDAO");
+        final String url = linkDao.findFullLink(id);
         if (url != null)
             resp.sendRedirect(url);
         else
@@ -46,13 +54,13 @@ public class UrlShortenerController {
         }
         
         String urlName = request.getUrlName();
-        if (!urlName.isEmpty() && redis.hasKey(urlName)) {
+        /*if (!urlName.isEmpty() && redis.hasKey(urlName)) {
             String requestUrl = httpRequest.getRequestURL().toString();
             String prefix = requestUrl.substring(0, requestUrl.indexOf(httpRequest.getRequestURI(), "http://".length()));
             String fullUrl = prefix + "/" + urlName;
             String urlExistsError = "URL <a href=\"" + fullUrl + "\" target=\"_blank\">" + fullUrl + "</a> already exists.";
             bindingResult.addError(new ObjectError("urlExistsError", urlExistsError));
-        }
+        }*/
 
         ModelAndView modelAndView = new ModelAndView("home");
         if (!bindingResult.hasErrors()) {
@@ -62,7 +70,7 @@ public class UrlShortenerController {
             } else {
                 id = generateHash(url);
             }
-            redis.opsForValue().set(id, url);
+            linkDao.setLink(id, url);
             String requestUrl = httpRequest.getRequestURL().toString();
             String prefix = requestUrl.substring(0, requestUrl.indexOf(httpRequest.getRequestURI(), "http://".length()));
             String fullUrl = prefix + "/" + id;
