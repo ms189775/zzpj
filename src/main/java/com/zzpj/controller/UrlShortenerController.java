@@ -35,7 +35,7 @@ public class UrlShortenerController {
         else
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
     }
-
+   
     @RequestMapping(value="/", method = RequestMethod.POST)
     public ModelAndView shortenUrl(HttpServletRequest httpRequest,
                                    @Valid UrlShortenerRequest request,
@@ -61,7 +61,7 @@ public class UrlShortenerController {
             if(!urlName.isEmpty()) {
                 id = urlName;
             } else {
-                id = Hashing.murmur3_32().hashString(url, StandardCharsets.UTF_8).toString();
+                id = generateHash(url);
             }
             redis.opsForValue().set(id, url);
             String requestUrl = httpRequest.getRequestURL().toString();
@@ -83,6 +83,11 @@ public class UrlShortenerController {
         return modelAndView;
     }
 
+    protected String generateHash(String url)
+    {
+        return Hashing.murmur3_32().hashString(url, StandardCharsets.UTF_8).toString();
+    }
+    
     private boolean isUrlValid(String url) {
         boolean valid = true;
         try {
