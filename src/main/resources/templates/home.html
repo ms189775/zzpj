@@ -1,3 +1,6 @@
+<#-- @ftlvariable name="_csrf" type="org.springframework.security.web.csrf.CsrfToken" -->
+<#-- @ftlvariable name="currentUser" type="com.zzpj.domain.CurrentUser" -->
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -27,7 +30,8 @@
                         <li><a href="#">Link</a>
                         </li>
                     </ul>
-                    <form class="navbar-form navbar-right" role="search">
+                    <form class="navbar-form navbar-right" role="form" action="/login" method="post">
+                        <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
                         <div class="input-group">
                             <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
                             <input type="text" class="form-control" name="username" placeholder="Username" size="12" />
