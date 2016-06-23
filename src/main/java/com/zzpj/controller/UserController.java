@@ -16,6 +16,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.validation.Valid;
 import java.util.NoSuchElementException;
+import org.springframework.validation.ObjectError;
 
 @Controller
 public class UserController {
@@ -46,17 +47,21 @@ public class UserController {
     }
 
     @RequestMapping(value = "/user/create", method = RequestMethod.POST)
-    public String handleUserCreateForm(@Valid @ModelAttribute("form") UserCreateForm form, BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            return "user_create";
+    public ModelAndView handleUserCreateForm(@Valid @ModelAttribute("form") UserCreateForm form, BindingResult bindingResult) {
+        if (!bindingResult.hasErrors()) {
+            try {
+                userService.create(form);
+            } catch (DataIntegrityViolationException e) {
+                bindingResult.reject("email.exists", "Email already exists");
+                return new ModelAndView("user_create");
+            }
+        } else {
+            ModelAndView modelAndView = new ModelAndView("user_create");
+            String error = bindingResult.getAllErrors().get(0).getDefaultMessage();
+            modelAndView.addObject("error", error);
+            return modelAndView;
         }
-        try {
-            userService.create(form);
-        } catch (DataIntegrityViolationException e) {
-            bindingResult.reject("email.exists", "Email already exists");
-            return "user_create";
-        }
-        return "redirect:/";
+        return new ModelAndView("redirect:/");
     }
 
 }
