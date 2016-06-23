@@ -1,11 +1,10 @@
 package com.zzpj.domain;
 
-import com.zzpj.domain.Role;
-
 import javax.persistence.*;
+import java.util.Set;
 
 @Entity
-@Table(name = "users")
+@Table(name = "user")
 public class User {
 
     @Id
@@ -22,6 +21,9 @@ public class User {
     @Column(name = "role", nullable = false)
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy="user")
+    private Set<Link> links;
 
     public Long getId() {
         return id;
@@ -53,5 +55,13 @@ public class User {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public Set<Link> getLinks() {
+        return links;
+    }
+
+    public void setLinks(Set<Link> links) {
+        this.links = links;
     }
 }
