@@ -41,7 +41,7 @@ public class UrlShortenerController {
         return "home";
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @RequestMapping(value = "/h/{id}", method = RequestMethod.GET)
     public void redirectToUrl(@PathVariable String id, HttpServletResponse resp) throws Exception {
         Link link = linkService.getLinkByHash(id)
                 .orElseThrow(() -> new NoSuchElementException(String.format("Link with hash=%s was not found", id)));
@@ -95,7 +95,7 @@ public class UrlShortenerController {
             }
             String requestUrl = httpRequest.getRequestURL().toString();
             String prefix = requestUrl.substring(0, requestUrl.indexOf(httpRequest.getRequestURI(), "http://".length()));
-            String fullUrl = prefix + "/" + id;
+            String fullUrl = prefix + "/h/" + id;
             String aliasCreatedInfo = "Alias created: <a href=\"" + fullUrl + "\" target=\"_blank\">" + fullUrl + "</a>!";
             modelAndView.addObject("aliasCreatedInfo", aliasCreatedInfo);
         } else if (bindingResult.getErrorCount() == 1) {

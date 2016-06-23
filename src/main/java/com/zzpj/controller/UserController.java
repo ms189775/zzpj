@@ -35,6 +35,7 @@ public class UserController {
         binder.addValidators(userCreateFormValidator);
     }
 
+    @PreAuthorize("@currentUserServiceImpl.canAccessUser(principal, #id)")
     @RequestMapping("/user/{id}")
     public ModelAndView getUserPage(@PathVariable Long id) {
         return new ModelAndView("user", "user", userService.getUserById(id)

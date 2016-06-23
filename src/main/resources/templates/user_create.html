@@ -40,8 +40,8 @@
                 <form role= "form" th:action="@{/user/create}"  method="POST" th:object="${form}">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                     <div>
-                        <label for="email-register">Email address</label>
-                        <input type="text" class="form-control" name="email" th:value="*{email}" id="email-register" placeholder="Email" size="12" />
+                        <label for="username-register">Username</label>
+                        <input type="text" class="form-control" name="email" th:value="*{email}" id="username-register" placeholder="Username" size="12" />
                     </div>
                     <div>
                         <label for="password-register">Password</label>

@@ -19,7 +19,7 @@
             </div>
             <div class="navbar-collapse collapse" id="navbar-main">
                 <ul class="nav navbar-nav" sec:authorize="isAuthenticated()">
-                    <li><a href="#">My links</a></li>
+                    <li><a th:href="@{/user/{id}(id=${currentUser.id})}">My links</a></li>
                 </ul>
                 <div class="navbar-form navbar-right" sec:authorize="isAuthenticated()">
                     <form th:action="@{/logout}" method="post">

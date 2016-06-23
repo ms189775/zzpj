@@ -1,15 +1,37 @@
 package com.zzpj.controller;
 
+import com.zzpj.domain.Link;
+import com.zzpj.domain.User;
+import com.zzpj.service.link.LinkService;
 import org.junit.Test;
 import org.junit.Assert;
 import org.junit.Before;
 
+import java.util.Optional;
+
 public class UrlShortenerControllerTest {
     UrlShortenerController usc;
+    LinkService ls;
     
     @Before
     public void initObjects() {
-        usc = new UrlShortenerController();
+        ls = new LinkService() {
+            @Override
+            public Optional<Link> getLinkByHash(String hash) {
+                return null;
+            }
+
+            @Override
+            public Link create(String url, String hash, User user) {
+                return null;
+            }
+
+            @Override
+            public Link create(String url, String hash) {
+                return null;
+            }
+        };
+        usc = new UrlShortenerController(ls);
     }
 
     /**
