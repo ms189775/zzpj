@@ -2,6 +2,8 @@ package com.zzpj.controller;
 
 import com.google.common.hash.Hashing;
 import com.zzpj.domain.CurrentUser;
+import com.zzpj.domain.Link;
+import com.zzpj.domain.User;
 import com.zzpj.service.link.LinkService;
 import com.zzpj.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +19,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.nio.charset.StandardCharsets;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import org.apache.commons.validator.UrlValidator;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 @Controller
 public class UrlShortenerController {
@@ -35,7 +40,9 @@ public class UrlShortenerController {
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public void redirectToUrl(@PathVariable String id, HttpServletResponse resp) throws Exception {
-        final String url = linkService.getLinkByHash(id).toString();
+        Link link = linkService.getLinkByHash(id)
+                .orElseThrow(() -> new NoSuchElementException(String.format("Link with hash=%s was not found", id)));
+        String url = link.getUrl();
         if (url != null)
             resp.sendRedirect(url);
         else
@@ -53,13 +60,20 @@ public class UrlShortenerController {
         }
         
         String urlName = request.getUrlName();
-        /*if (!urlName.isEmpty()) { //  && redis.hasKey(urlName)
+        boolean hasHash = true;
+        try {
+        Link link = linkService.getLinkByHash(urlName)
+                .orElseThrow(() -> new NoSuchElementException(String.format("Link with hash=%s was not found", urlName)));
+        } catch(NoSuchElementException e) {
+            hasHash = false;
+        }
+        if (!urlName.isEmpty() && hasHash) { //  && redis.hasKey(urlName)
             String requestUrl = httpRequest.getRequestURL().toString();
             String prefix = requestUrl.substring(0, requestUrl.indexOf(httpRequest.getRequestURI(), "http://".length()));
             String fullUrl = prefix + "/" + urlName;
             String urlExistsError = "URL <a href=\"" + fullUrl + "\" target=\"_blank\">" + fullUrl + "</a> already exists.";
             bindingResult.addError(new ObjectError("urlExistsError", urlExistsError));
-        }*/
+        }
 
         ModelAndView modelAndView = new ModelAndView("home");
         if (!bindingResult.hasErrors()) {
