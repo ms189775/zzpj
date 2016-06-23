@@ -1,6 +1,9 @@
 package com.zzpj.controller;
 
 import com.google.common.hash.Hashing;
+import com.zzpj.domain.CurrentUser;
+import com.zzpj.service.link.LinkService;
+import com.zzpj.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Controller;
@@ -18,9 +21,13 @@ import org.apache.commons.validator.UrlValidator;
 
 @Controller
 public class UrlShortenerController {
-    @Autowired
-    private StringRedisTemplate redis;
+    private final LinkService linkService;
 
+    @Autowired
+    public UrlShortenerController(LinkService linkService) {
+        this.linkService = linkService;
+    }
+    
     @RequestMapping(value="/", method = RequestMethod.GET)
     public String showForm(UrlShortenerRequest request) {
         return "home";
@@ -28,7 +35,7 @@ public class UrlShortenerController {
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public void redirectToUrl(@PathVariable String id, HttpServletResponse resp) throws Exception {
-        final String url = redis.opsForValue().get(id);
+        final String url = linkService.getLinkByHash(id).toString();
         if (url != null)
             resp.sendRedirect(url);
         else
@@ -46,13 +53,13 @@ public class UrlShortenerController {
         }
         
         String urlName = request.getUrlName();
-        if (!urlName.isEmpty() && redis.hasKey(urlName)) {
+        /*if (!urlName.isEmpty()) { //  && redis.hasKey(urlName)
             String requestUrl = httpRequest.getRequestURL().toString();
             String prefix = requestUrl.substring(0, requestUrl.indexOf(httpRequest.getRequestURI(), "http://".length()));
             String fullUrl = prefix + "/" + urlName;
             String urlExistsError = "URL <a href=\"" + fullUrl + "\" target=\"_blank\">" + fullUrl + "</a> already exists.";
             bindingResult.addError(new ObjectError("urlExistsError", urlExistsError));
-        }
+        }*/
 
         ModelAndView modelAndView = new ModelAndView("home");
         if (!bindingResult.hasErrors()) {
@@ -62,7 +69,7 @@ public class UrlShortenerController {
             } else {
                 id = generateHash(url);
             }
-            redis.opsForValue().set(id, url);
+            linkService.create(url, id); //, currentUser.getUser()
             String requestUrl = httpRequest.getRequestURL().toString();
             String prefix = requestUrl.substring(0, requestUrl.indexOf(httpRequest.getRequestURI(), "http://".length()));
             String fullUrl = prefix + "/" + id;

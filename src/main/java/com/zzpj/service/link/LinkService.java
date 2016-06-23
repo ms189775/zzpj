@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface LinkService {
     Optional<Link> getLinkByHash(String hash);
     Link create(String url, String hash, User user);
+    Link create(String url, String hash);
 }

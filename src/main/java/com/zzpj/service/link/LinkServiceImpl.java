@@ -36,5 +36,13 @@ public class LinkServiceImpl implements LinkService {
         link.setHash(hash);
         return linkRepository.save(link);
     }
+
+    @Override
+    public Link create(String url, String hash) {
+        Link link = new Link();
+        link.setUrl(url);
+        link.setHash(hash);
+        return linkRepository.save(link);
+    }
 }
 
