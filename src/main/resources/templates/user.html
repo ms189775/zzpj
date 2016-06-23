@@ -39,7 +39,7 @@
             </thead>
             <tbody>
             <tr th:each="link : ${user.links}">
-                <td><a href="#" th:text="${link.url}"></a></td>
+                <td><a th:href="${link.url}" th:text="${link.url}"></a></td>
                 <td th:text="${link.hash}"></td>
             </tr>
             </tbody>
