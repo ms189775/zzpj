@@ -61,7 +61,6 @@ public class UserController {
             modelAndView.addObject("error", error);
             return modelAndView;
         }
-        return new ModelAndView("redirect:/");
+        return new ModelAndView("redirect:/login");
     }
-
 }

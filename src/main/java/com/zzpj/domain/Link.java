@@ -3,7 +3,7 @@ package com.zzpj.domain;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "link")
+@Table(name = "links")
 public class Link {
 
     @Id
