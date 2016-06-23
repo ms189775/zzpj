@@ -1,4 +1,4 @@
-package com.zzpj.controller;
+package com.zzpj.domain;
 
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;

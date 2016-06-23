@@ -4,6 +4,7 @@ import com.google.common.hash.Hashing;
 import com.zzpj.domain.CurrentUser;
 import com.zzpj.domain.Link;
 import com.zzpj.service.link.LinkService;
+import com.zzpj.domain.UrlShortenerRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
