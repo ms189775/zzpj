@@ -114,7 +114,7 @@ public class UrlShortenerController {
 
     protected String generateHash(String url)
     {
-        return Hashing.murmur3_32().hashString(url, StandardCharsets.UTF_8).toString();
+        return Hashing.murmur3_32().hashString(url + System.currentTimeMillis(), StandardCharsets.UTF_8).toString();
     }
     
     protected boolean isUrlValid(String url) {
