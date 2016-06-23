@@ -3,11 +3,8 @@ package com.zzpj.controller;
 import com.google.common.hash.Hashing;
 import com.zzpj.domain.CurrentUser;
 import com.zzpj.domain.Link;
-import com.zzpj.domain.User;
 import com.zzpj.service.link.LinkService;
-import com.zzpj.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
@@ -20,12 +17,10 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.nio.charset.StandardCharsets;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import org.apache.commons.validator.UrlValidator;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 @Controller
 public class UrlShortenerController {
@@ -84,7 +79,7 @@ public class UrlShortenerController {
             if(!urlName.isEmpty()) {
                 id = urlName;
             } else {
-                id = generateHash(url);
+                id = generateHash(url, String.valueOf(System.currentTimeMillis()));
             }
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             if (!(auth instanceof AnonymousAuthenticationToken)) {
@@ -112,9 +107,9 @@ public class UrlShortenerController {
         return modelAndView;
     }
 
-    protected String generateHash(String url)
+    protected String generateHash(String url, String time)
     {
-        return Hashing.murmur3_32().hashString(url + System.currentTimeMillis(), StandardCharsets.UTF_8).toString();
+        return Hashing.murmur3_32().hashString(url + time, StandardCharsets.UTF_8).toString();
     }
     
     protected boolean isUrlValid(String url) {

@@ -40,8 +40,8 @@ public class UrlShortenerControllerTest {
     @Test
     public void testGenerateHash() {
         String input = "test";
-        String expectedOutput = "13d26bba";
-        String output = usc.generateHash(input);
+        String expectedOutput = "e5df1276";
+        String output = usc.generateHash(input, "1466642618242");
         Assert.assertEquals(expectedOutput, output);
     }
     
