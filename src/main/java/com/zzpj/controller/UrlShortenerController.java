@@ -22,6 +22,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import org.apache.commons.validator.UrlValidator;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 @Controller
@@ -67,7 +70,7 @@ public class UrlShortenerController {
         } catch(NoSuchElementException e) {
             hasHash = false;
         }
-        if (!urlName.isEmpty() && hasHash) { //  && redis.hasKey(urlName)
+        if (!urlName.isEmpty() && hasHash) {
             String requestUrl = httpRequest.getRequestURL().toString();
             String prefix = requestUrl.substring(0, requestUrl.indexOf(httpRequest.getRequestURI(), "http://".length()));
             String fullUrl = prefix + "/" + urlName;
@@ -83,7 +86,13 @@ public class UrlShortenerController {
             } else {
                 id = generateHash(url);
             }
-            linkService.create(url, id); //, currentUser.getUser()
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (!(auth instanceof AnonymousAuthenticationToken)) {
+                CurrentUser user = (CurrentUser) auth.getPrincipal();
+                linkService.create(url, id, user.getUser());                
+            } else {
+                linkService.create(url, id);                
+            }
             String requestUrl = httpRequest.getRequestURL().toString();
             String prefix = requestUrl.substring(0, requestUrl.indexOf(httpRequest.getRequestURI(), "http://".length()));
             String fullUrl = prefix + "/" + id;

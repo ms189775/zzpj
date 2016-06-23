@@ -34,6 +34,7 @@ public class LinkServiceImpl implements LinkService {
         Link link = new Link();
         link.setUrl(url);
         link.setHash(hash);
+        link.setUser(user);
         return linkRepository.save(link);
     }
 
