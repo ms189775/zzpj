@@ -42,11 +42,13 @@ public class UserController {
                 .orElseThrow(() -> new NoSuchElementException(String.format("User=%s not found", id))));
     }
 
+    @PreAuthorize("isAnonymous()")
     @RequestMapping(value = "/user/create", method = RequestMethod.GET)
     public ModelAndView getUserCreatePage() {
         return new ModelAndView("user_create", "form", new UserCreateForm());
     }
 
+    @PreAuthorize("isAnonymous()")
     @RequestMapping(value = "/user/create", method = RequestMethod.POST)
     public ModelAndView handleUserCreateForm(@Valid @ModelAttribute("form") UserCreateForm form, BindingResult bindingResult) {
         if (!bindingResult.hasErrors()) {
