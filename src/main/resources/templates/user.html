@@ -43,12 +43,14 @@
             <tr>
                 <th>Url</th>
                 <th>Hash</th>
+                <th>Expire date</th>
             </tr>
             </thead>
             <tbody>
             <tr th:each="link : ${user.links}">
                 <td><a th:href="${link.url}" th:text="${link.url}" target="_blank"></a></td>
                 <td><a th:href="@{/h/{hash}(hash=${link.hash})}" th:text="${link.hash}" target="_blank"></a></td>
+                <td th:text="${#dates.format(link.expireDate, 'YYYY/MM/dd HH:mm')}"></td>
             </tr>
             </tbody>
         </table>

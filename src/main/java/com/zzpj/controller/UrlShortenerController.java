@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.nio.charset.StandardCharsets;
+import java.util.Date;
 import java.util.NoSuchElementException;
 import org.apache.commons.validator.UrlValidator;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -42,7 +43,9 @@ public class UrlShortenerController {
         Link link = linkService.getLinkByHash(id)
                 .orElseThrow(() -> new NoSuchElementException(String.format("Link with hash=%s was not found", id)));
         String url = link.getUrl();
-        if (url != null)
+        Date date = link.getExpireDate();
+        Date now = new Date();
+        if (url != null && date.after(now))
             resp.sendRedirect(url);
         else
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);

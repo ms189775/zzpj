@@ -1,6 +1,8 @@
 package com.zzpj.domain;
 
+import java.util.Date;
 import javax.persistence.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
 @Entity
 @Table(name = "links")
@@ -16,6 +18,9 @@ public class Link {
 
     @Column(name = "hash", nullable = false, unique = false)
     private String hash;
+    
+    @Column(name = "expire_date", nullable = false, unique = false)
+    private Date expireDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = true)
@@ -43,6 +48,14 @@ public class Link {
 
     public void setHash(String hash) {
         this.hash = hash;
+    }
+    
+    public Date getExpireDate() {
+        return expireDate;
+    }
+
+    public void setExpireDate(Date expireDate) {
+        this.expireDate = expireDate;
     }
 
     public User getUser() {
