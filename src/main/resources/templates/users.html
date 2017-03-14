@@ -20,7 +20,7 @@
             <div class="navbar-collapse collapse" id="navbar-main">
                 <ul class="nav navbar-nav">
                     <li sec:authorize="isAuthenticated()"><a th:href="@{/user/{id}(id=${currentUser.id})}">My links</a></li>
-                    <li sec:authorize="hasAnyAuthority('ADMIN')"><a th:href="@{/users}">Users</a></li>
+                    <li class='active' sec:authorize="hasAnyAuthority('ADMIN')"><a th:href="@{/users}">Users</a></li>
                 </ul>
                 <div class="navbar-form navbar-right" sec:authorize="isAuthenticated()">
                     <form th:action="@{/logout}" method="post">
@@ -37,23 +37,21 @@
         </div>
     </nav>
     <div class="container">
-        <div class="starter-template">
-            <h1>URL Shortener</h1>
-            <p class="lead">
-                <form th:action="@{/}" th:object="${urlShortenerRequest}" method="POST">
-                    <div class="input-group input-group-lg">
-                        <input type="text" class="form-control" id="url" name="url" placeholder="http://example.com" th:field="*{url}" />
-                        <span class="input-group-addon">/</span>
-                        <input type="text" class="form-control" id="urlName" name="urlName" placeholder="(optional)" th:field="*{urlName}" />
-                        <span class="input-group-btn">
-                            <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-scissors" /> Cut it!</button>
-                        </span>
-                    </div>
-                    <div class="alert alert-success top-buffer" role="alert" th:if="${aliasCreatedInfo}" th:utext="${aliasCreatedInfo}" />
-                    <div class="alert alert-danger top-buffer" role="alert" th:if="${error}" th:utext="${error}"></div>
-                </form>
-            </p>
-        </div>
-    </div><!-- /.container -->
+        <h2>Users</h2>
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>User</th>
+                <th>No. of links</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="user : ${users}">
+                <td><a th:href="@{/user/{id}(id=${user.id})}" th:text="${user.email}"></a></td>
+                <td th:text="${#lists.size(user.links)}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 </body>
 </html>

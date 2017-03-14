@@ -18,12 +18,20 @@
                 <a class="navbar-brand" href="/">URL Shortener</a>
             </div>
             <div class="navbar-collapse collapse" id="navbar-main">
+                <ul class="nav navbar-nav">
+                    <li class='active' sec:authorize="isAuthenticated()"><a th:href="@{/user/{id}(id=${currentUser.id})}">My links</a></li>
+                    <li sec:authorize="hasAnyAuthority('ADMIN')"><a th:href="@{/users}">Users</a></li>
+                </ul>
                 <div class="navbar-form navbar-right" sec:authorize="isAuthenticated()">
                     <form th:action="@{/logout}" method="post">
                         Hello, <b th:text="${currentUser.user.email}" />!
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                         <button type="submit" class="btn btn-default">Log out</button>
                     </form>
+                </div>
+                <div class="navbar-form navbar-right" sec:authorize="isAnonymous()">
+                    <a href="/login" class="btn btn-default">Sign in</a>
+                    <a href="/user/create" class="btn btn-success">Register</a>
                 </div>
             </div>
         </div>
@@ -39,8 +47,8 @@
             </thead>
             <tbody>
             <tr th:each="link : ${user.links}">
-                <td><a th:href="${link.url}" th:text="${link.url}"></a></td>
-                <td th:text="${link.hash}"></td>
+                <td><a th:href="${link.url}" th:text="${link.url}" target="_blank"></a></td>
+                <td><a th:href="@{/h/{hash}(hash=${link.hash})}" th:text="${link.hash}" target="_blank"></a></td>
             </tr>
             </tbody>
         </table>
