@@ -23,6 +23,7 @@ import org.apache.commons.validator.UrlValidator;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 public class UrlShortenerController {
@@ -50,7 +51,16 @@ public class UrlShortenerController {
         else
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
     }
-   
+    
+    @RequestMapping(value="/renew/{id}", method = RequestMethod.GET)
+    @ResponseBody
+    public String renewLink(@PathVariable String id) throws Exception {
+        Link link = linkService.getLinkByHash(id)
+            .orElseThrow(() -> new NoSuchElementException(String.format("Link with hash=%s was not found", id)));
+        linkService.renew(link);
+        return "renewed";
+    }
+
     @RequestMapping(value="/", method = RequestMethod.POST)
     public ModelAndView shortenUrl(HttpServletRequest httpRequest,
                                    @Valid UrlShortenerRequest request,
@@ -64,7 +74,7 @@ public class UrlShortenerController {
         String urlName = request.getUrlName();
         boolean hasHash = true;
         try {
-        Link link = linkService.getLinkByHash(urlName)
+            Link link = linkService.getLinkByHash(urlName)
                 .orElseThrow(() -> new NoSuchElementException(String.format("Link with hash=%s was not found", urlName)));
         } catch(NoSuchElementException e) {
             hasHash = false;

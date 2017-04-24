@@ -58,5 +58,11 @@ public class LinkServiceImpl implements LinkService {
         Instant instant = ldt.toInstant(ZoneOffset.UTC);
         return Date.from(instant);
     }
+
+    @Override
+    public void renew(Link link) {
+        link.setExpireDate(getDatePlusDays(DAYS));
+        linkRepository.save(link);
+    }
 }
 

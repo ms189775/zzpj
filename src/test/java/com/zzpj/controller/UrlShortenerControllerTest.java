@@ -30,6 +30,11 @@ public class UrlShortenerControllerTest {
             public Link create(String url, String hash) {
                 return null;
             }
+
+            @Override
+            public void renew(Link link) {
+                
+            }
         };
         usc = new UrlShortenerController(ls);
     }
