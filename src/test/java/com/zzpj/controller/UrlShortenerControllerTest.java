@@ -1,42 +1,24 @@
 package com.zzpj.controller;
 
-import com.zzpj.domain.Link;
-import com.zzpj.domain.User;
-import com.zzpj.service.link.LinkService;
-import org.junit.Test;
 import org.junit.Assert;
-import org.junit.Before;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Optional;
-
+import org.springframework.beans.factory.annotation.Autowired;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+        
+@RunWith(SpringRunner.class)
+@SpringBootTest
 public class UrlShortenerControllerTest {
-    UrlShortenerController usc;
-    LinkService ls;
-    
-    @Before
-    public void initObjects() {
-        ls = new LinkService() {
-            @Override
-            public Optional<Link> getLinkByHash(String hash) {
-                return null;
-            }
 
-            @Override
-            public Link create(String url, String hash, User user) {
-                return null;
-            }
+    @Autowired
+    private UrlShortenerController controller;
 
-            @Override
-            public Link create(String url, String hash) {
-                return null;
-            }
-
-            @Override
-            public void renew(Link link) {
-                
-            }
-        };
-        usc = new UrlShortenerController(ls);
+    @Test
+    public void contexLoads() throws Exception {
+        assertThat(controller).isNotNull();
     }
 
     /**
@@ -46,7 +28,7 @@ public class UrlShortenerControllerTest {
     public void testGenerateHash() {
         String input = "test";
         String expectedOutput = "e5df1276";
-        String output = usc.generateHash(input, "1466642618242");
+        String output = controller.generateHash(input, "1466642618242");
         Assert.assertEquals(expectedOutput, output);
     }
     
@@ -55,10 +37,10 @@ public class UrlShortenerControllerTest {
      */
     @Test
     public void testIsUrlValid() {
-        Assert.assertEquals(false, usc.isUrlValid("test"));
-        Assert.assertEquals(false, usc.isUrlValid("http://"));
-        Assert.assertEquals(false, usc.isUrlValid("http://test"));
-        Assert.assertEquals(true, usc.isUrlValid("http://test.pl/"));
+        Assert.assertEquals(false, controller.isUrlValid("test"));
+        Assert.assertEquals(false, controller.isUrlValid("http://"));
+        Assert.assertEquals(false, controller.isUrlValid("http://test"));
+        Assert.assertEquals(true, controller.isUrlValid("http://test.pl/"));
     }
     
 }

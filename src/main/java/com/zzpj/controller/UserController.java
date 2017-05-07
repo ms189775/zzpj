@@ -35,7 +35,7 @@ public class UserController {
         binder.addValidators(userCreateFormValidator);
     }
 
-    @PreAuthorize("@currentUserServiceImpl.canAccessUser(principal, #id)")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @RequestMapping("/users")
     public ModelAndView getUsersPage() {
         return new ModelAndView("users", "users", userService.getUsers());
