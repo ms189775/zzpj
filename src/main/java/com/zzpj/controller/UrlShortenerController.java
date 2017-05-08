@@ -20,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.NoSuchElementException;
 import org.apache.commons.validator.UrlValidator;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -52,6 +53,7 @@ public class UrlShortenerController {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
     }
     
+    @PreAuthorize("@currentUserServiceImpl.canAccessLink(principal, #id)")
     @RequestMapping(value="/renew/{id}", method = RequestMethod.GET)
     @ResponseBody
     public String renewLink(@PathVariable String id) throws Exception {
@@ -80,9 +82,7 @@ public class UrlShortenerController {
             hasHash = false;
         }
         if (!urlName.isEmpty() && hasHash) {
-            String requestUrl = httpRequest.getRequestURL().toString();
-            String prefix = requestUrl.substring(0, requestUrl.indexOf(httpRequest.getRequestURI(), "http://".length()));
-            String fullUrl = prefix + "/" + urlName;
+            String fullUrl = getFullUrl(httpRequest, urlName);
             String urlExistsError = "URL <a href=\"" + fullUrl + "\" target=\"_blank\">" + fullUrl + "</a> already exists.";
             bindingResult.addError(new ObjectError("urlExistsError", urlExistsError));
         }
@@ -102,9 +102,7 @@ public class UrlShortenerController {
             } else {
                 linkService.create(url, id);                
             }
-            String requestUrl = httpRequest.getRequestURL().toString();
-            String prefix = requestUrl.substring(0, requestUrl.indexOf(httpRequest.getRequestURI(), "http://".length()));
-            String fullUrl = prefix + "/h/" + id;
+            String fullUrl = getFullUrl(httpRequest, id);
             String aliasCreatedInfo = "Alias created: <a href=\"" + fullUrl + "\" target=\"_blank\">" + fullUrl + "</a>!";
             modelAndView.addObject("aliasCreatedInfo", aliasCreatedInfo);
         } else if (bindingResult.getErrorCount() == 1) {
@@ -130,5 +128,11 @@ public class UrlShortenerController {
         String[] schemes = {"http", "https"};
         UrlValidator urlValidator = new UrlValidator(schemes);
         return urlValidator.isValid(url);
+    }
+
+    protected String getFullUrl(HttpServletRequest httpRequest, String id) {
+        String requestUrl = httpRequest.getRequestURL().toString();
+        String prefix = requestUrl.substring(0, requestUrl.indexOf(httpRequest.getRequestURI(), "http://".length()));
+        return prefix + "/h/" + id;
     }
 }

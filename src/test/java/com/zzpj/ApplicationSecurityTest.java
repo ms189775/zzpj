@@ -5,10 +5,8 @@ import com.zzpj.domain.CurrentUser;
 import com.zzpj.domain.Link;
 import com.zzpj.domain.Role;
 import com.zzpj.domain.User;
+import com.zzpj.service.link.LinkService;
 import com.zzpj.service.user.UserService;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -16,35 +14,23 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import static org.hamcrest.Matchers.containsString;
 import org.junit.Before;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.formLogin;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.core.authority.AuthorityUtils;
-import org.springframework.security.test.context.support.WithMockUser;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.RequestBuilder;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -74,35 +60,38 @@ public class ApplicationSecurityTest {
     }
 
     @MockBean
-    private UserService service;
-
-    private CurrentUser getUser() {
-        User user = new User();
-        user.setId(1l);
-        user.setEmail("user");
-        user.setPasswordHash("pass");
-        user.setRole(Role.USER);
-        return new CurrentUser(user);
-    }
+    private UserService userService;
     
-    private CurrentUser getAdmin() {
+    @MockBean
+    private LinkService linkService;
+
+    private CurrentUser getMockAdmin() {
         User user = new User();
         user.setId(1l);
         user.setEmail("admin");
-        user.setPasswordHash("pass");
+        user.setPasswordHash("passAdmin");
         user.setRole(Role.ADMIN);
         return new CurrentUser(user);
     }
     
-    @Test
-    public void rootShouldReturn200andCorrectContent() throws Exception {
-        mockMvc.perform(get("/"))
-                .andExpect(status().isOk())
-                .andExpect(content().string(containsString("URL Shortener")));
+    private CurrentUser getMockUser() {
+        User user = new User();
+        user.setId(2l);
+        user.setEmail("user");
+        user.setPasswordHash("passUser");
+        user.setRole(Role.USER);
+        return new CurrentUser(user);
     }
     
     @Test
-    public void usersShouldReturn200() throws Exception {
+    public void checkIfRootReturn200() throws Exception {
+        mockMvc.perform(get("/"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("URL Shortener")));
+    }
+    
+    @Test
+    public void checkIfUsersPageReturn200() throws Exception {
         List<User> userList = new ArrayList<>();
         User user = new User();
         user.setId(1l);
@@ -113,45 +102,90 @@ public class ApplicationSecurityTest {
         links.add(link);
         user.setLinks(links);
         userList.add(user);
-        when(service.getUsers()).thenReturn(userList);
-
-        mockMvc.perform(get("/users").with(user(getAdmin())))
+        when(userService.getUsers()).thenReturn(userList);
+        mockMvc.perform(get("/users").with(user(getMockAdmin())))
             .andExpect(status().isOk())
             .andExpect(content().string(containsString("<td><a href=\"/user/1\">Testowa nazwa</a></td>")));
     }
     
     @Test
-    public void usersShouldReturn403() throws Exception {
-        mockMvc.perform(get("/users").with(user(getUser())))
-            .andDo(print())
+    public void checkIfUsersPageReturn302() throws Exception {
+        mockMvc.perform(get("/users").with(user(getMockUser())))
             .andExpect(status().isForbidden());
     }
     
-    /*@Test
-    public void loginUser1Ok() throws Exception {		
-        RequestBuilder requestBuilder = formLogin().user("admin").password("123");
-        mockMvc.perform(requestBuilder)
-                .andDo(print())
-                .andExpect(status().isFound())
-                .andExpect(redirectedUrl("/login?error"))
-                .andExpect(cookie().exists("remember-me"));				
-    }*/
+    @Test
+    public void checkIfUserPageReturn200() throws Exception {
+        Optional<User> optUser = Optional.of(getMockUser().getUser()); 
+        when(userService.getUserById(2)).thenReturn(optUser);
+        mockMvc.perform(get("/user/2").with(user(getMockUser())))
+            .andExpect(status().isOk());
+        mockMvc.perform(get("/user/2").with(user(getMockAdmin())))
+            .andExpect(status().isOk());
+    }
     
-    /*@Test
-    public void greetingShouldReturnMessageFromService() throws Exception {
-        HttpServletRequest httpServletRequest = mock(HttpServletRequest.class);
-        HttpServletResponse httpServletResponse = mock(HttpServletResponse.class);
-        FilterChain filterChain = mock(FilterChain.class);
-        when(httpServletRequest.getRequestURI()).thenReturn("http://test.pl/");
+    @Test
+    public void checkIfUserPageReturn403() throws Exception {
+        mockMvc.perform(get("/user/1").with(user(getMockUser())))
+            .andExpect(status().isForbidden());
+    }
+    
+    @Test
+    public void checkIfExpiredLinkReturn404() throws Exception {
         Link link = new Link();
         link.setUrl("http://test.pl/");
-        LocalDateTime ldt = LocalDateTime.now().plusDays(7);
-        Instant instant = ldt.toInstant(ZoneOffset.UTC);
-        link.setExpireDate(Date.from(instant));
-        Optional<Link> optLink = Optional.of(link); 
-        when(service.getLinkByHash("hash")).thenReturn(optLink);
-        
-        this.mockMvc.perform(get("/h/hash")).andExpect(status().isOk());
-                //.andExpect(redirectedUrlPattern("http://test.pl/"));
-    }*/
+        link.setExpireDate(new Date(Long.MIN_VALUE));
+        Optional<Link> optLink = Optional.of(link);
+        when(linkService.getLinkByHash("abc")).thenReturn(optLink);
+        mockMvc.perform(get("/h/abc"))
+            .andDo(print())
+            .andExpect(status().isNotFound());
+    }
+    
+    @Test
+    public void checkIfUnexpiredLinkReturn302AndRedirect() throws Exception {
+        Link link = new Link();
+        link.setUrl("http://test.pl/");
+        link.setExpireDate(new Date(Long.MAX_VALUE));
+        Optional<Link> optLink = Optional.of(link);
+        when(linkService.getLinkByHash("abc")).thenReturn(optLink);
+        mockMvc.perform(get("/h/abc"))
+            .andExpect(status().isFound())
+            .andExpect(redirectedUrl("http://test.pl/"));
+    }
+    
+    @Test
+    public void checkIfRenewPageReturn200() throws Exception {
+        User user = getMockUser().getUser();
+        Set<Link> links = new HashSet<>();
+        Link link = new Link();
+        link.setHash("test");
+        link.setUrl("http://test.pl/");
+        links.add(link);
+        user.setLinks(links);
+        Optional<User> optUser = Optional.of(user); 
+        when(userService.getUserById(user.getId())).thenReturn(optUser);
+        when(linkService.getLinkByHash("test")).thenReturn(Optional.of(link));
+        mockMvc.perform(get("/renew/test").with(user(getMockUser())))
+            .andExpect(status().isOk());
+        mockMvc.perform(get("/renew/test").with(user(getMockAdmin())))
+            .andExpect(status().isOk());
+    }
+    
+    @Test
+    public void checkIfRenewPageReturn403() throws Exception {
+        CurrentUser currentUser = getMockUser();
+        User admin = getMockAdmin().getUser();
+        Set<Link> links = new HashSet<>();
+        Link link = new Link();
+        link.setHash("test2");
+        link.setUrl("http://test.pl/");
+        links.add(link);
+        admin.setLinks(links);
+        Optional<User> optUser = Optional.of(admin); 
+        when(userService.getUserById(currentUser.getId())).thenReturn(optUser);
+        when(linkService.getLinkByHash("test")).thenReturn(Optional.of(link));
+        mockMvc.perform(get("/renew/test").with(user(currentUser)))
+            .andExpect(status().isForbidden());
+    }
 }
