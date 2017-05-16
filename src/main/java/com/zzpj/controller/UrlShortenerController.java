@@ -78,7 +78,7 @@ public class UrlShortenerController {
         try {
             Link link = linkService.getLinkByHash(urlName)
                 .orElseThrow(() -> new NoSuchElementException(String.format("Link with hash=%s was not found", urlName)));
-        } catch(NoSuchElementException e) {
+        } catch(NoSuchElementException | NullPointerException e) {
             hasHash = false;
         }
         if (!urlName.isEmpty() && hasHash) {
@@ -96,11 +96,13 @@ public class UrlShortenerController {
                 id = generateHash(url, String.valueOf(System.currentTimeMillis()));
             }
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            if (!(auth instanceof AnonymousAuthenticationToken)) {
-                CurrentUser user = (CurrentUser) auth.getPrincipal();
-                linkService.create(url, id, user.getUser());                
-            } else {
-                linkService.create(url, id);                
+            if (auth != null) {
+                if (!(auth instanceof AnonymousAuthenticationToken)) {
+                    CurrentUser user = (CurrentUser) auth.getPrincipal();
+                    linkService.create(url, id, user.getUser());                
+                } else {
+                    linkService.create(url, id);                
+                }
             }
             String fullUrl = getFullUrl(httpRequest, id);
             String aliasCreatedInfo = "Alias created: <a href=\"" + fullUrl + "\" target=\"_blank\">" + fullUrl + "</a>!";
