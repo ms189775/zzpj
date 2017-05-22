@@ -1,9 +1,13 @@
 package com.zzpj.controller;
 
 import com.zzpj.domain.Role;
-import com.zzpj.domain.User;
 import com.zzpj.domain.UserCreateForm;
+import com.zzpj.service.link.LinkServiceImpl;
 import com.zzpj.service.user.UserService;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Date;
 import org.junit.Assert;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,11 +22,9 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.AuthorityUtils;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.servlet.ModelAndView;
         
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -33,6 +35,9 @@ public class ApplicationUnitTest {
     
     @Autowired
     private UserController userController;
+    
+    @Autowired
+    private LinkServiceImpl linkService;
 
     @MockBean
     private UserService userService;
@@ -87,5 +92,13 @@ public class ApplicationUnitTest {
         } finally {
             SecurityContextHolder.clearContext();
         }
+    }
+    
+    @Test
+    public void checkIfDatesAreCorrectlyAdded() {
+        Date result = linkService.getDatePlusDays(7);
+        Instant instant = LocalDateTime.now().toInstant(ZoneOffset.UTC);
+        Date now = Date.from(instant);
+        Assert.assertTrue(result.getTime() - now.getTime() == 7 * 24 * 60 * 60 * 1000);
     }
 }

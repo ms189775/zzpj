@@ -53,7 +53,7 @@ public class LinkServiceImpl implements LinkService {
         return linkRepository.save(link);
     }
     
-    private Date getDatePlusDays(int days) {
+    public Date getDatePlusDays(int days) {
         LocalDateTime ldt = LocalDateTime.now().plusDays(days);
         Instant instant = ldt.toInstant(ZoneOffset.UTC);
         return Date.from(instant);
